@@ -5,7 +5,7 @@ services:
     environment:
       - POSTGRES_USER=johndoe
       - POSTGRES_PASSWORD=randompassword
-      - POSTGRES_DB=redwood
+      - POSTGRES_DB=postgres
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
