@@ -1,0 +1,45 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - prod  # Déclenche le workflow sur les pushs vers la branche prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}  # Ajoutez votre nom d'utilisateur Docker Hub dans les secrets
+          password: ${{ secrets.DOCKER_PASSWORD }}  # Ajoutez votre mot de passe Docker Hub dans les secrets
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: your-dockerhub-username/your-image-name:latest  # Remplacez par votre nom d'utilisateur et le nom de l'image
+
+      - name: SSH to VPS and deploy
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_IP }}  # Ajoutez l'IP de votre VPS dans les secrets
+          username: ${{ secrets.VPS_USERNAME }}  # Ajoutez votre nom d'utilisateur VPS dans les secrets
+          key: ${{ secrets.VPS_SSH_KEY }}  # Ajoutez votre clé SSH dans les secrets
+          port: 22
+          source: "."
+          target: "/path/to/your/app"  # Chemin sur votre VPS où déployer l'application
+
+      - name: Run Docker Compose
+        run: |
+          ssh -i ${{ secrets.VPS_SSH_KEY }} ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "cd /path/to/your/app && docker-compose up -d"

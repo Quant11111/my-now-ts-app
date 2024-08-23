@@ -10,5 +10,15 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - '5432:5432'
+
+  next:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgres://johndoe:randompassword@postgres:5432/postgres
+    depends_on:
+      - postgres
+
 volumes:
   postgres:
